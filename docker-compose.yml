@@ -1,20 +1,9 @@
 version: "3.8"
 
 services:
-  zookeeper:
-    image: docker.io/bitnami/zookeeper:3.9
-    ports:
-      - "2181:2181"
-    volumes:
-      - "zookeeper_data:/bitnami"
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-
   kafka:
     image: bitnami/kafka
     container_name: kafka
-    depends_on:
-      - zookeeper
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
@@ -27,17 +16,6 @@ services:
       - "9093:9093"
     volumes:
       - "kafka_data:/bitnami"
-
-  spark:
-    image: bitnami/spark:3
-    container_name: spark
-    depends_on:
-      - kafka
-    environment:
-      - SPARK_MODE=master
-    ports:
-      - "7077:7077"
-      - "8080:8080"
 
   producer:
     build: ./producer
@@ -78,7 +56,5 @@ services:
       
 volumes:
   db-data:
-  zookeeper_data:
-    driver: local
   kafka_data:
     driver: local
