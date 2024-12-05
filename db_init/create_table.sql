@@ -1,4 +1,4 @@
-CREATE TABLE stock_prices (
+CREATE TABLE IF NOT EXISTS stock_prices (
     id SERIAL PRIMARY KEY,
     symbol VARCHAR(10),
     open FLOAT,
