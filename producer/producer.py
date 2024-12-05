@@ -6,6 +6,7 @@ import os
 import pandas as pd
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
+TOPIC_NAME = 'stock_data_topic'
 
 # Custom JSON encoder to handle Pandas Timestamp
 def json_serializer(obj):
@@ -39,7 +40,7 @@ def fetch_and_send_stock_data():
                 message = {'symbol': symbol, 'data': latest_data}
                 
                 # Send data to Kafka
-                producer.send('stock_data', message)
+                producer.send(TOPIC_NAME, message)
                 print(f"Sent data for {symbol}: {message}")
         
         # Fetch data every minute

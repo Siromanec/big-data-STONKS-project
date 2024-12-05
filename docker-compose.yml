@@ -46,6 +46,7 @@ services:
       - kafka
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+  
   db:
     image: mysql
     container_name: mysql_container
