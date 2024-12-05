@@ -1,97 +1,93 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import *
 import os
-import psycopg2
+import json
+import mysql.connector
+from kafka import KafkaConsumer
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Kafka and Database Configuration
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
-SPARK_MASTER_URL = os.getenv('SPARK_MASTER_URL', 'spark://spark:7077')
+TOPIC_NAME = 'stock_data_topic'
+
+# MySQL Configuration
 DB_HOST = os.getenv('DB_HOST', 'db')
-DB_NAME = os.getenv('DB_NAME', 'your_db')
-DB_USER = os.getenv('DB_USER', 'your_user')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'your_password')
+DB_USER = os.getenv('DB_USER', 'user')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
+DB_NAME = os.getenv('DB_NAME', 'stock_data')
 
-# Initialize Spark Session
-spark = SparkSession.builder \
-    .appName("StockDataConsumer") \
-    .master("spark://spark:7077") \
-    .config("spark.driver.host", "consumer") \
-    .getOrCreate()
-
-spark.sparkContext.setLogLevel("WARN")
-
-# Define schema for incoming JSON data
-schema = StructType([
-    StructField("symbol", StringType(), True),
-    StructField("data", StructType([
-        StructField("Open", DoubleType(), True),
-        StructField("High", DoubleType(), True),
-        StructField("Low", DoubleType(), True),
-        StructField("Close", DoubleType(), True),
-        StructField("Volume", DoubleType(), True),
-        StructField("Datetime", TimestampType(), True),
-    ]), True)
-])
-
-# Read data from Kafka
-df = spark.readStream.format("kafka") \
-    .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS) \
-    .option("subscribe", "stock_data") \
-    .option("startingOffsets", "latest") \
-    .load()
-
-# Convert the binary 'value' column to string
-df = df.selectExpr("CAST(value AS STRING) as json_str")
-
-# Parse JSON data
-json_df = df.select(from_json(col("json_str"), schema).alias("data")).select("data.*")
-
-# Flatten the nested 'data' struct
-flattened_df = json_df.select(
-    col("symbol"),
-    col("data.Open").alias("open"),
-    col("data.High").alias("high"),
-    col("data.Low").alias("low"),
-    col("data.Close").alias("close"),
-    col("data.Volume").alias("volume"),
-    col("data.Datetime").alias("date")
-)
-
-# Define the function to write each batch to the database
-def write_to_db(df, epoch_id):
-    # Convert Spark DataFrame to Pandas DataFrame
-    pandas_df = df.toPandas()
-    if not pandas_df.empty:
-        # Database connection parameters
-        conn = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD
+class StockDataConsumer:
+    def __init__(self):
+        # Initialize Kafka Consumer
+        self.consumer = KafkaConsumer(
+            TOPIC_NAME,
+            bootstrap_servers=[KAFKA_BOOTSTRAP_SERVERS],
+            auto_offset_reset='earliest',
+            enable_auto_commit=True,
+            group_id='stock-data-consumer-group',
+            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
-        cursor = conn.cursor()
-        for index, row in pandas_df.iterrows():
-            insert_query = """
-            INSERT INTO stock_prices (symbol, open, high, low, close, volume, date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(insert_query, (
-                row['symbol'],
-                row['open'],
-                row['high'],
-                row['low'],
-                row['close'],
-                row['volume'],
-                row['date']
-            ))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print(f"Batch {epoch_id} written to database")
 
-# Write stream to the database
-query = flattened_df.writeStream \
-    .foreachBatch(write_to_db) \
-    .start()
+        # Initialize MySQL Connection
+        self.connection = mysql.connector.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME
+        )
+        self.cursor = self.connection.cursor()
 
-query.awaitTermination()
+    def consume_and_save(self):
+        logger.info(f"Starting consumer for topic {TOPIC_NAME}")
+        
+        try:
+            for message in self.consumer:
+                try:
+                    stock_data = message.value
+                    symbol = stock_data['symbol']
+                    data = stock_data['data']
+
+                    # Prepare SQL query
+                    insert_query = """
+                    INSERT INTO stock_prices 
+                    (symbol, date, open, high, low, close, volume)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """
+
+                    # Extract values from the data
+                    values = (
+                        symbol,
+                        data.get('Date', None),
+                        data.get('Open', None),
+                        data.get('High', None),
+                        data.get('Low', None),
+                        data.get('Close', None),
+                        data.get('Volume', None)
+                    )
+
+                    # Execute the insert
+                    self.cursor.execute(insert_query, values)
+                    self.connection.commit()
+
+                    logger.info(f"Saved stock data for {symbol}")
+
+                except Exception as e:
+                    logger.error(f"Error processing message: {e}")
+                    self.connection.rollback()
+
+        except Exception as e:
+            logger.error(f"Unexpected error in consumer: {e}")
+
+        finally:
+            self.cursor.close()
+            self.connection.close()
+
+def main():
+    consumer = StockDataConsumer()
+    consumer.consume_and_save()
+
+if __name__ == '__main__':
+    main()
