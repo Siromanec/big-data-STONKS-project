@@ -53,8 +53,8 @@ class StockDataConsumer:
                     # Prepare SQL query
                     insert_query = """
                     INSERT INTO stock_prices 
-                    (symbol, date, open, high, low, close, volume, dividends, stock_splits) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (symbol, date, open, high, low, close, volume)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                     """
 
                     # Extract values from the data
@@ -65,9 +65,7 @@ class StockDataConsumer:
                         data.get('High', None),
                         data.get('Low', None),
                         data.get('Close', None),
-                        data.get('Volume', None),
-                        data.get('Dividends', None),
-                        data.get('Stock Splits', None)
+                        data.get('Volume', None)
                     )
 
                     # Execute the insert
