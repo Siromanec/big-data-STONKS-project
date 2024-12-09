@@ -2,11 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY producer.py ./
-
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-ARG KAFKA_BOOTSTRAP_SERVERS
+COPY *.py ./
 
-CMD ["python", "producer.py"]
+
+
+
+CMD ["python", "main.py"]
