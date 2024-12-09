@@ -1,17 +1,16 @@
 from typing import Callable, Literal
 from repository import AVAILABLE_STOCKS
-import fbprophet
-import arima
 
 PREDICTION_METHODS = Literal["fbprophet", "arima", "lstm"]
 
+DEFAULT_PREDICTION = [1, 2, 3, 4, 5]
 
-def fbprophet_predict():
-    pass
-def arima_predict():
-    pass
-def lstm_predict():
-    pass
+def fbprophet_predict(data):
+    return DEFAULT_PREDICTION
+def arima_predict(data):
+    return DEFAULT_PREDICTION
+def lstm_predict(data):
+    return DEFAULT_PREDICTION
 
 def get_method(method: PREDICTION_METHODS) -> Callable:
     match method:
