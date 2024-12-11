@@ -5,11 +5,11 @@ PREDICTION_METHODS = Literal["fbprophet", "arima", "lstm"]
 
 DEFAULT_PREDICTION = [1, 2, 3, 4, 5]
 
-def fbprophet_predict(data):
+def fbprophet_predict(data, period):
     return DEFAULT_PREDICTION
-def arima_predict(data):
+def arima_predict(data, period):
     return DEFAULT_PREDICTION
-def lstm_predict(data):
+def lstm_predict(data, period):
     return DEFAULT_PREDICTION
 
 def get_method(method: PREDICTION_METHODS) -> Callable:
