@@ -1,6 +1,7 @@
 import os
 from typing import Literal
 
+import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy import Table, MetaData
 
@@ -28,6 +29,8 @@ def get_data(stock: AVAILABLE_STOCKS) -> sa.engine.result.Result:
 def data_to_dict(data_query_result: sa.engine.result.Result) -> dict:
     data = data_query_result.fetchall()
     zip_data = list(zip(*data))
+    x = pd.date_range(start='1/1/2024', periods=len(data), freq="1min")
+    dates = [str(date) for date in x]
     return {
         "id": zip_data[0],
         "symbol": zip_data[1],
@@ -36,6 +39,6 @@ def data_to_dict(data_query_result: sa.engine.result.Result) -> dict:
         "low": zip_data[4],
         "close": zip_data[5],
         "volume": zip_data[6],
-        "date": zip_data[7],
+        "date": dates, # FIXME: This is a placeholder
 
     }

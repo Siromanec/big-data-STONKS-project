@@ -25,7 +25,7 @@ def fbprophet_predict(x: Sequence[float], y: Sequence, period: int, *args, **kwa
     Sequence[datetime.datetime], Sequence[float]]:
     prophet_model = prophet.Prophet()
 
-    x = pd.date_range(start='1/1/2020', periods=len(y), freq="1min") # FIXME: This is a placeholder
+    x = pd.date_range(start='1/1/2024', periods=len(y), freq="1min") # FIXME: This is a placeholder
 
     prophet_model.fit(pd.DataFrame({'ds': x, 'y': y}))
     future = prophet_model.make_future_dataframe(periods=period, freq="1min")
@@ -39,7 +39,7 @@ def arima_predict(x: Sequence[float], y: Sequence, period: int, exog=None, order
     # Fit the ARIMA model
     if order is None:
         order = (4, 2, 40)  # Adjust this based on model performance
-    x = pd.date_range(start='1/1/2020', periods=len(y), freq="1min") # FIXME: This is a placeholder
+    x = pd.date_range(start='1/1/2024', periods=len(y), freq="1min") # FIXME: This is a placeholder
 
     model = ARIMA(y, order=order, dates=x,)
     fitted_model = model.fit()
