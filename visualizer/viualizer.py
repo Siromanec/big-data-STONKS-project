@@ -31,7 +31,7 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, titl
         y=historical_data.values,
         mode='lines',
         name='Historical Data',
-        line=dict(color='blue')
+        line=dict(color='steelblue')
     ))
 
     # Plot predictions
@@ -51,16 +51,17 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, titl
             y=running_average.values,
             mode='lines',
             name=f'{window_size}-hour Running Average',
-            line=dict(color='green', dash='dash')
+            line=dict(color='rgba(144, 244, 144, 0.9)', dash='dash')
         ))
 
     # Plot layout
     fig.update_layout(
-        title=title or "Predictions vs Historical Data",
+        title=title,
         xaxis_title="Time",
-        yaxis_title="Values",
+        yaxis_title="Price",
         legend_title="Legend",
         template="plotly_white",
+        plot_bgcolor="whitesmoke",
         xaxis=dict(showgrid=True),
         yaxis=dict(showgrid=True)
     )
