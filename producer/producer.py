@@ -76,7 +76,7 @@ class StockDataProducer:
             for symbol in stock_symbols:
                 stock = yf.Ticker(symbol)
                 # Fetch stock data for the last month 
-                data = stock.history(period='5d', interval='1m')
+                data = stock.history(period='max', interval='1m')
                 
                 for _, row in data.iterrows():
                     insert_query = """

@@ -125,19 +125,13 @@ async def main():
             id='radio-buttons',
             options=[
                 {'label': 'ARIMA', 'value': 'arima'},
-                {'label': 'prophet', 'value': 'prophet'}
+                {'label': 'prophet', 'value': 'fbprophet'}
             ],
         ),
         dcc.Graph(figure={}, id='controls-and-graph')
     ])
 
-    @callback(
-    Output(component_id='controls-and-graph', component_property='figure'),
-    [
-        Input(component_id='dropdown-placeholder', component_property='value'),
-        Input(component_id='radio-buttons', component_property='value')
-    ])
-    def update_graph(dropdown_value, radio_value):
+    async def fetch_data(radio_value, dropdown_value):
         async with ClientSession() as session:
             async with session.get(f'http://localhost:8000/predict?method={radio_value}&stock={dropdown_value}&period=99', json=[4, 1, 20]) as response:
                 prediction = (await response.json())
@@ -147,18 +141,31 @@ async def main():
                 if response.status != 200:
                     raise ValueError(await response.text())
                 history = (await response.json())
+        return history, prediction
+
+    @callback(
+    Output(component_id='controls-and-graph', component_property='figure'),
+    [
+        Input(component_id='dropdown-placeholder', component_property='value'),
+        Input(component_id='radio-buttons', component_property='value')
+    ])
+    def update_graph(dropdown_value, radio_value):
+
+        history, prediction = asyncio.run(fetch_data(radio_value, dropdown_value))
+
     
         historical_data = pd.Series(data=np.mean([history["low"], history["high"], history["close"]], axis=0),
                                     index=[pd.Timestamp(i) for i in history["date"]])
         predictions = pd.Series(data=prediction["forecast"], index=[pd.Timestamp(i) for i in prediction["dates"]])
     
-        plot_prediction(historical_data,
+        return plot_prediction(historical_data,
                         predictions,
                         plot_running_window=True,
                         plot_trend_line=True,
                         title=f"Predicting {dropdown_value} with {radio_value}",
                         window_size=60,
-                        return_figure=False)
+                        return_figure=True)
+    app.run(debug=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
