@@ -82,7 +82,7 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, plot
 
             fig.add_trace(go.Scatter(
                 x=last_12_hours.index,
-                y=trend_y,
+                y=trend_y.flatten(),
                 mode='lines',
                 name='Trend Line',
                 line=dict(color='rgba(128, 0, 128, 0.9)')
@@ -154,20 +154,7 @@ async def main():
     ])
     def update_graph(dropdown_value, radio_value):
         if not dropdown_value or not radio_value:
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=[], y=[],
-                mode='lines',
-                name='blank'
-            ))
-            fig.update_layout(
-                title="blank",
-                xaxis_title="Time",
-                yaxis_title="Values",
-                template="plotly_white",
-                plot_bgcolor="whitesmoke",
-            )
-            return fig
+            return None
           
         history, prediction = asyncio.run(fetch_data(radio_value, dropdown_value))
     
