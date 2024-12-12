@@ -13,7 +13,7 @@ router = fastapi.APIRouter()
 @router.get("/predict")
 async def predict(stock: AVAILABLE_STOCKS,
                   method: Annotated[Callable, Depends(get_method)],
-                  period: Annotated[int, fastapi.Query(lt=40)],
+                  period: Annotated[int, fastapi.Query(lt=100)],
                   max_history: Annotated[int, fastapi.Query(gt=20)] = None,
                   order: Annotated[tuple[int, int, int], fastapi.Query] = None):
     # predict stock price

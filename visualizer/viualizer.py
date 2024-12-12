@@ -79,14 +79,18 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, titl
 
 async def main():
     async with ClientSession() as session:
-        async with session.get('http://localhost:8000/predict?method=fbprophet&stock=AAPL&period=10') as response:
+        async with session.get('http://localhost:8000/predict?method=arima&stock=AAPL&period=99', json=[4, 1, 20]) as response:
             prediction = (await response.json())
+            if response.status != 200:
+                raise ValueError(await response.text())
         async with session.get('http://localhost:8000/get_data?stock=AAPL') as response:
+            if response.status != 200:
+                raise ValueError(await response.text())
             history = (await response.json())
+
 
     historical_data = pd.Series(data=np.mean([history["low"], history["high"], history["close"]], axis=0),
                                 index=[pd.Timestamp(i) for i in history["date"]])
-
     predictions = pd.Series(data=prediction["forecast"], index=[pd.Timestamp(i) for i in prediction["dates"]])
 
     plot_prediction(historical_data, predictions, plot_running_window=True, title="Example", window_size=24,
