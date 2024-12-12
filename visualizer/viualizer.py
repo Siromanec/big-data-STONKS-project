@@ -82,7 +82,7 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, plot
 
             fig.add_trace(go.Scatter(
                 x=last_12_hours.index,
-                y=trend_y.flatten(),
+                y=trend_y,
                 mode='lines',
                 name='Trend Line',
                 line=dict(color='rgba(128, 0, 128, 0.9)')
@@ -120,13 +120,16 @@ async def main():
                 {'label': 'GOOGL', 'value': 'GOOGL'},
                 {'label': 'MSFT', 'value': 'MSFT'}
             ],
+            placeholder="Select a stock"
         ),
         dcc.RadioItems(
             id='radio-buttons',
             options=[
                 {'label': 'ARIMA', 'value': 'arima'},
-                {'label': 'prophet', 'value': 'fbprophet'}
+                {'label': 'prophet', 'value': 'prophet'}
             ],
+            inline=True,
+            labelStyle={"margin-right": "10px"}
         ),
         dcc.Graph(figure={}, id='controls-and-graph')
     ])
@@ -150,9 +153,23 @@ async def main():
         Input(component_id='radio-buttons', component_property='value')
     ])
     def update_graph(dropdown_value, radio_value):
-
+        if not dropdown_value or not radio_value:
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=[], y=[],
+                mode='lines',
+                name='blank'
+            ))
+            fig.update_layout(
+                title="blank",
+                xaxis_title="Time",
+                yaxis_title="Values",
+                template="plotly_white",
+                plot_bgcolor="whitesmoke",
+            )
+            return fig
+          
         history, prediction = asyncio.run(fetch_data(radio_value, dropdown_value))
-
     
         historical_data = pd.Series(data=np.mean([history["low"], history["high"], history["close"]], axis=0),
                                     index=[pd.Timestamp(i) for i in history["date"]])
@@ -165,6 +182,7 @@ async def main():
                         title=f"Predicting {dropdown_value} with {radio_value}",
                         window_size=60,
                         return_figure=True)
+      
     app.run(debug=True)
 
 if __name__ == "__main__":
