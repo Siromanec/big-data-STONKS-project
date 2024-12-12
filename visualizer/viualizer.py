@@ -58,7 +58,7 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, plot
             y=running_average.values,
             mode='lines',
             name=f'{window_size}-minute Running Average',
-            line=dict(color='rgba(144, 244, 144, 0.9)')
+            line=dict(color='rgba(144, 244, 144, 0.9)', dash='dash')
         ))
 
     # Add a trend line of the last 12 hours of historical data
@@ -80,11 +80,11 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, plot
             trend_y = model.predict(trend_x)
 
             fig.add_trace(go.Scatter(
-                x=historical_data.index,
+                x=last_12_hours.index,
                 y=trend_y.flatten(),
                 mode='lines',
                 name='Trend Line',
-                line=dict(color='rgba(128, 0, 128, 0.9)', dash='dash')
+                line=dict(color='rgba(128, 0, 128, 0.9)')
             ))
 
     # Plot layout
