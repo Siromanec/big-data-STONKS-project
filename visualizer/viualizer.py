@@ -126,7 +126,7 @@ async def main():
             id='radio-buttons',
             options=[
                 {'label': 'ARIMA', 'value': 'arima'},
-                {'label': 'prophet', 'value': 'prophet'}
+                {'label': 'prophet', 'value': 'fbprophet'}
             ],
             inline=True,
             labelStyle={"margin-right": "10px"}
