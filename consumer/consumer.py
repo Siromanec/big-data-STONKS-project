@@ -58,9 +58,17 @@ class StockDataConsumer:
                     """
 
                     # Extract values from the data
+                    # 'Datetime': Timestamp('2024-12-12 10:08:00-0500', tz='America/New_York')
+                    timestamp = data.get('Datetime', None)
+                    processed_date = timestamp
+                    
+                    # if timestamp:
+                    #     timestamp = pd.to_datetime(timestamp)
+                    #     processed_date = timestamp.tz_convert(None).strftime('%Y-%m-%d %H:%M:%S')
+                    
                     values = (
                         symbol,
-                        data.get('Date', None),
+                        processed_date,
                         data.get('Open', None),
                         data.get('High', None),
                         data.get('Low', None),
