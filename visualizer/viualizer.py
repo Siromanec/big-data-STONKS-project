@@ -1,8 +1,13 @@
-import plotly.graph_objects as go
-import pandas as pd
-from datetime import datetime, timedelta
+import asyncio
 
-def plot_prediction(historical_data, predictions, plot_running_window=True, title=None, window_size=24, return_figure=False):
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+from aiohttp import ClientSession
+
+
+def plot_prediction(historical_data, predictions, plot_running_window=True, title=None, window_size=24,
+                    return_figure=False):
     """
     Plot predictions and historical data for the series.
 
@@ -71,15 +76,27 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, titl
     else:
         fig.show()
 
-# Example usage
+
+async def main():
+    async with ClientSession() as session:
+        async with session.get('http://localhost:8000/predict?method=fbprophet&stock=AAPL&period=10') as response:
+            prediction = (await response.json())
+        async with session.get('http://localhost:8000/get_data?stock=AAPL') as response:
+            history = (await response.json())
+
+    print(prediction["dates"])
+    print(history["date"])
+    historical_data = pd.Series(data=np.mean([history["low"], history["high"], history["close"]]),
+                                index=[pd.Timestamp(i) for i in history["date"]])
+
+    predictions = pd.Series(data=prediction["forecast"], index=[pd.Timestamp(i) for i in prediction["dates"]])
+
+    plot_prediction(historical_data, predictions, plot_running_window=True, title="Example", window_size=24,
+                    return_figure=False)
+
+    # Example usage
 if __name__ == "__main__":
-    # Generate example data
-    date_rng = pd.date_range(start="2024-01-01", end="2024-01-05", freq="h")
-    historical_data = pd.Series(data=[i + (i % 24) for i in range(len(date_rng))], index=date_rng)
+    asyncio.run(main())
 
-    prediction_rng = pd.date_range(start="2024-01-05 00:00:00", end="2024-01-06 23:00:00", freq="h")
-    predictions = pd.Series(data=[i + 95 for i in range(len(prediction_rng))], index=prediction_rng)
-
-    plot_prediction(historical_data, predictions, plot_running_window=True, title="Example", window_size=24, return_figure=False)
     # fig = plot_prediction(historical_data, predictions, plot_running_window=True, title="Example", window_size=24, return_figure=True)
     # fig.write_image("plot.png")
