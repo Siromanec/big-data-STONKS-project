@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from aiohttp import ClientSession
 from sklearn.linear_model import LinearRegression
+from dash import Dash, html, dcc, callback, Output, Input
 
 
 def plot_prediction(historical_data, predictions, plot_running_window=True, plot_trend_line=True, title=None, window_size=60,
