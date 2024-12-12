@@ -84,9 +84,7 @@ async def main():
         async with session.get('http://localhost:8000/get_data?stock=AAPL') as response:
             history = (await response.json())
 
-    print(prediction["dates"])
-    print(history["date"])
-    historical_data = pd.Series(data=np.mean([history["low"], history["high"], history["close"]]),
+    historical_data = pd.Series(data=np.mean([history["low"], history["high"], history["close"]], axis=0),
                                 index=[pd.Timestamp(i) for i in history["date"]])
 
     predictions = pd.Series(data=prediction["forecast"], index=[pd.Timestamp(i) for i in prediction["dates"]])

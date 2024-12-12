@@ -45,7 +45,7 @@ class StockDataProducer:
         for symbol in stock_symbols:
             # Fetch stock data
             stock = yf.Ticker(symbol)
-            data = stock.history(period='1m', interval='1m')
+            data = stock.history(period='1d', interval='1m')
             if not data.empty:
                 # Convert DataFrame to dict with proper serialization
                 latest_data = data.tail(1).reset_index().to_dict('records')[0]
