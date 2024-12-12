@@ -55,7 +55,7 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, titl
             x=running_average.index,
             y=running_average.values,
             mode='lines',
-            name=f'{window_size}-hour Running Average',
+            name=f'{window_size}-minute Running Average',
             line=dict(color='rgba(144, 244, 144, 0.9)', dash='dash')
         ))
 
@@ -89,7 +89,7 @@ async def main():
 
     predictions = pd.Series(data=prediction["forecast"], index=[pd.Timestamp(i) for i in prediction["dates"]])
 
-    plot_prediction(historical_data, predictions, plot_running_window=True, title="Example", window_size=24,
+    plot_prediction(historical_data, predictions, plot_running_window=True, title=None, window_size=60,
                     return_figure=False)
 
     # Example usage
