@@ -154,7 +154,15 @@ async def main():
     ])
     def update_graph(dropdown_value, radio_value):
         if not dropdown_value or not radio_value:
-            return None
+            fig = go.Figure()
+            fig.update_layout(
+                title="Blank",
+                xaxis_title="Time",
+                yaxis_title="Values",
+                template="plotly_white",
+                plot_bgcolor="whitesmoke",
+            )
+            return fig
           
         history, prediction = asyncio.run(fetch_data(radio_value, dropdown_value))
     
