@@ -1,5 +1,6 @@
 import asyncio
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -77,8 +78,7 @@ def plot_prediction(historical_data, predictions, plot_running_window=True, plot
             model = LinearRegression()
             model.fit(x, y)
 
-            trend_x = (historical_data.index - last_12_hours.index[0]).total_seconds().values.reshape(-1, 1)
-            trend_y = model.predict(trend_x)
+            trend_y = model.predict(x)
 
             fig.add_trace(go.Scatter(
                 x=last_12_hours.index,
