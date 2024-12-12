@@ -58,7 +58,7 @@ class StockDataProducer:
                 message = {'symbol': symbol, 'data': latest_data}
 
                 # Send data to Kafka
-                producer.send(TOPIC_NAME, message)
+                self.producer.send(TOPIC_NAME, message)
                 print(f"Sent data for {symbol}: {message}")
     
     # Prepend DB with data for the last year to be able to build predictions
@@ -98,12 +98,12 @@ class StockDataProducer:
                     self.cursor.execute(insert_query, values)
                     self.connection.commit()
         
-producer = StockDataProducer()    
+stock_data_producer = StockDataProducer()    
     
 async def run_fetch_and_send_stock_data():    
     while True:
         try:
-            producer.fetch_and_send_stock_data()
+            stock_data_producer.fetch_and_send_stock_data()
             # Fetch data every minute
             await asyncio.sleep(60)
         except KeyboardInterrupt:
@@ -111,6 +111,6 @@ async def run_fetch_and_send_stock_data():
 
 
 if __name__ == '__main__':
-    producer.add_initial_stock_data()
+    stock_data_producer.add_initial_stock_data()
     
     asyncio.run(run_fetch_and_send_stock_data())
