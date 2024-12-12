@@ -23,7 +23,7 @@ def preprocess_data(func: Callable) -> Callable:
 @preprocess_data
 def fbprophet_predict(x: Sequence[float], y: Sequence, period: int, *args, **kwargs) -> tuple[
     Sequence[datetime.datetime], Sequence[float]]:
-    prophet_model = prophet.Prophet()
+    prophet_model = prophet.Prophet(n_changepoints=30,changepoint_range=0.8, daily_seasonality=180)
 
     x = pd.date_range(start='1/1/2024', periods=len(y), freq="1min") # FIXME: This is a placeholder
 
